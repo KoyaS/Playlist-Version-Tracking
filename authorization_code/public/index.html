@@ -1,0 +1,566 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Example of the Authorization Code flow with Spotify</title>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+  <style type="text/css">
+    #login,
+    #loggedin {
+      display: none;
+    }
+
+    .text-overflow {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 500px;
+    }
+
+    #Search_All {
+      display: none;
+    }
+
+    /* Things for table styling */
+    .dataTables_length {
+      color: white !important;
+    }
+
+    .dataTables_filter {
+      color: white !important;
+    }
+
+    .dataTables_empty {
+      background-color: #121212;
+    }
+
+    #Search_All:focus {
+      border-color: rgba(126, 239, 104, 0.8);
+      box-shadow: 0 0 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px white;
+      outline: 0 none;
+      color: white;
+    }
+  </style>
+</head>
+
+<body style="padding-top:100px; background-color: #121212; color: whitesmoke;">
+  <div class="container">
+    <div id="login">
+      <h1>This is an example of the Authorization Code flow</h1>
+      <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+    </div>
+    <div id="loggedin">
+      <div id="default">
+        <div id="user-profile">
+        </div>
+        <div id="oauth">
+        </div>
+        <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
+      </div>
+      <div id="selected-playlist-display">
+      </div>
+      <input type="text" id="Search_All" class="form-control bg-dark mb-5 shadow-lg" placeholder="Song title..."
+        style="border: 0; outline: 0; background: transparent; border-bottom: 1px solid white; border-radius: 0;">
+      <table id='current-songs-table' style="table-layout: fixed; height: 50%; word-wrap:break-word;" class="">
+      </table>
+      <table id='old-songs-table' style="table-layout: fixed; height: 50%; word-wrap:break-word;" class="">
+      </table>
+      <div id="playlist-selection">
+      </div>
+    </div>
+  </div>
+
+  <script id="user-profile-template" type="text/x-handlebars-template">
+      <h1>Logged in as {{display_name}}</h1>
+      <div class="media">
+        <div class="pull-left">
+          <img class="media-object" width="150" src="{{images.0.url}}" />
+        </div>
+        <div class="media-body">
+          <dl class="dl-horizontal">
+            <dt>Display name</dt><dd class="clearfix">{{display_name}}</dd>
+            <dt>Id</dt><dd>{{id}}</dd>
+            <dt>Email</dt><dd>{{email}}</dd>
+            <dt>Spotify URI</dt><dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
+            <dt>Link</dt><dd><a href="{{href}}">{{href}}</a></dd>
+            <dt>Profile Image</dt><dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>
+            <dt>Country</dt><dd>{{country}}</dd>
+          </dl>
+        </div>
+      </div>
+    </script>
+
+  <script id="oauth-template" type="text/x-handlebars-template">
+      <h2>oAuth info</h2>
+      <dl class="dl-horizontal">
+        <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
+        <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}</dd>
+      </dl>
+    </script>
+
+  <script id="playlist-selection-template" type="text/x-handlebars-template">
+
+      <h1>Select a playlist:</h1>
+  
+      {{#each items}}
+      <div class="row">
+        <div class="col-lg-4 col-md-4 col-xs-4">
+          <a class="thumbnail playlist-thumbnail" id="{{ id }}">
+              <img class="img-responsive" src="{{ images.[0].url }}" alt="">
+          </a>
+        </div>
+        <div class="col-lg-4 col-md-4 col-xs-4 thumb">
+            <h2> {{{ name }}} </h2>
+            <p> {{{ description }}} </p>
+            <a href="{{ external_urls.spotify }} ">
+              <!-- This icon came from the following webpage: https://icons.getbootstrap.com/icons/box-arrow-up-right/ -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+              </svg>
+            </a>
+        </div>
+      </div>
+      {{/each}}
+    </script>
+
+  <script id="selected-playlist-display-template" type="text/x-handlebars-template">
+
+  <div class="jumbotron" style="background-color: transparent;">
+    <div class="row">
+      <div class="col-lg-4 col-md-4 col-xs-4">
+        <a class="" id="{{ id }}">
+          <img class="img-responsive" src="{{ images.[0].url }}" alt="">
+        </a>
+      </div>
+      <h1 class="display-4"> {{{ name }}} </h1>
+      <p class="lead"> {{{ description }}} </p>
+    </div>
+  </div>
+  
+
+
+  </script>
+
+  <!-- DataTables -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.js"></script>
+
+  <!-- Working, adds movable row functionality -->
+  <!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jq-3.3.1/dt-1.10.23/fc-3.3.2/rr-1.2.7/datatables.min.css"/>
+  <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jq-3.3.1/dt-1.10.23/fc-3.3.2/rr-1.2.7/datatables.min.js"></script>  -->
+
+  <!-- Working, adds row grouping functionality -->
+  <!-- <script type="text/javascript" src="https://cdn.datatables.net/rowgroup/1.1.2/js/dataTables.rowGroup.min.js"></script> -->
+
+  <!-- Working, adds freeze column functionality -->
+  <script type="text/javascript"
+    src="https://cdn.datatables.net/fixedcolumns/3.3.2/js/dataTables.fixedColumns.min.js"></script>
+
+
+  <!-- Tabulator -->
+  <!-- <link href="/dist/css/bootstrap/tabulator_bootstrap4.min.css" type="text/css" rel="stylesheet"> -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.3/css/materialize/tabulator_materialize.min.css"
+    rel="stylesheet">
+
+  <!-- <link href="//cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.3/css/tabulator.min.css" rel="stylesheet"> -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/tabulator/4.9.3/js/tabulator.min.js"></script>
+
+  <!-- Handlebars -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+  <!-- <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script> -->
+
+  <script>
+    (function () {
+
+      // $('#playlist-selection').hide();
+
+      /**
+       * Obtains parameters from the hash of the URL
+       * @return Object
+       */
+      function getHashParams() {
+        var hashParams = {};
+        var e, r = /([^&;=]+)=?([^&;]*)/g,
+          q = window.location.hash.substring(1);
+        while (e = r.exec(q)) {
+          hashParams[e[1]] = decodeURIComponent(e[2]);
+        }
+        return hashParams;
+      }
+
+      var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+        userProfileTemplate = Handlebars.compile(userProfileSource),
+        userProfilePlaceholder = document.getElementById('user-profile');
+
+      var oauthSource = document.getElementById('oauth-template').innerHTML,
+        oauthTemplate = Handlebars.compile(oauthSource),
+        oauthPlaceholder = document.getElementById('oauth');
+
+      var playlistSelectionSource = document.getElementById('playlist-selection-template').innerHTML,
+        playlistSelectionTemplate = Handlebars.compile(playlistSelectionSource),
+        playlistSelectionPlaceholder = document.getElementById('playlist-selection');
+
+      var selectedPlaylistDisplaySource = document.getElementById('selected-playlist-display-template').innerHTML,
+        selectedPlaylistDisplayTemplate = Handlebars.compile(selectedPlaylistDisplaySource),
+        selectedPlaylistDisplayPlaceholder = document.getElementById('selected-playlist-display');
+
+      var params = getHashParams();
+
+      var access_token = params.access_token,
+        refresh_token = params.refresh_token,
+        error = params.error;
+
+      if (error) {
+        alert('There was an error during the authentication');
+      } else {
+        if (access_token) {
+          // render oauth info
+          oauthPlaceholder.innerHTML = oauthTemplate({
+            access_token: access_token,
+            refresh_token: refresh_token
+          });
+
+          $.ajax({
+            url: 'https://api.spotify.com/v1/me',
+            headers: {
+              'Authorization': 'Bearer ' + access_token
+            },
+            success: function (response) {
+              userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+              $('#login').hide();
+              $('#loggedin').show();
+              $('#default').hide();
+
+              $.ajax({
+                url: 'https://api.spotify.com/v1/me/playlists',
+                data: { Authorization: 'Bearer ' + access_token },
+                type: "GET",
+                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + access_token); },
+                success: function (data) {
+                  console.log(data);
+                  playlistSelectionPlaceholder.innerHTML = playlistSelectionTemplate(data);
+                }
+              });
+            }
+          });
+        } else {
+          // render initial screen
+          $('#login').show();
+          $('#loggedin').hide();
+        }
+
+        document.getElementById('obtain-new-token').addEventListener('click', function () {
+          $.ajax({
+            url: '/refresh_token',
+            data: {
+              'refresh_token': refresh_token
+            }
+          }).done(function (data) {
+            access_token = data.access_token;
+            oauthPlaceholder.innerHTML = oauthTemplate({
+              access_token: access_token,
+              refresh_token: refresh_token
+            });
+          });
+        }, false);
+
+        var table;
+
+        $(document).on('click', '.playlist-thumbnail', function () {
+          var playlistID = $(this).attr('id');
+
+          $.ajax({
+            url: '/chart',
+            data: {
+              'playlistID': playlistID
+            } // Dictionary-type data
+          }).done(function (data) {
+
+            console.log('data from the backend request');
+            console.log(data);
+
+            console.log(data.playlistReqBody);
+            selectedPlaylistDisplayPlaceholder.innerHTML = selectedPlaylistDisplayTemplate(data.playlistReqBody);
+            $('#Search_All').show();
+
+            // Creating column header settings dictionary ------------------------------------------------------------
+
+            // Incoming data looks like an array of: {name: "Time Machine", 1609727952280: true, 1609728121706: true, 1609728138723: true, 1609728161577: true}
+            var columnSettings = [{ data: 'name', title: 'Song Title' }];
+            var song = data.currentSongs[0]; // This can fail if an empty array is passed, should never happen though 
+            var millisTimes = Object.keys(song);
+
+            // Remove index of 'name'
+            var index = millisTimes.indexOf('name');
+            if (index !== -1) {
+              millisTimes.splice(index, 1);
+            }
+
+            // Order millisTimes least to greatest
+            millisTimes.sort(function (a, b) { return a - b });
+
+            // Convert ordered millisTimes to date strings
+            for (var millisTime of millisTimes) {
+              var dateTime = new Date(parseInt(millisTime));
+              var titleString = dateTime.toLocaleString();
+              columnSettings.push({ data: millisTime, title: titleString, width: "100px" });
+            }
+
+            // Add button column to the end
+            columnSettings.unshift({ data: 'button', title: '' });
+
+            // End table header settings dictionary -----------------------------------------------------------------
+            // Table settings ---------------------------------------------------------------------------------------
+            var currentSongs = data.currentSongs;
+            var oldSongs = data.oldSongs;
+
+            /*!
+            * Get the contrasting color for any hex color
+            * (c) 2019 Chris Ferdinandi, MIT License, https://gomakethings.com
+            * Derived from work by Brian Suda, https://24ways.org/2010/calculating-color-contrast/
+            * @param  {String} A hexcolor value
+            * @return {String} The contrasting color (black or white)
+            */
+            var getContrast = function (hexcolor) {
+
+              // If a leading # is provided, remove it
+              if (hexcolor.slice(0, 1) === '#') {
+                hexcolor = hexcolor.slice(1);
+              }
+
+              // If a three-character hexcode, make six-character
+              if (hexcolor.length === 3) {
+                hexcolor = hexcolor.split('').map(function (hex) {
+                  return hex + hex;
+                }).join('');
+              }
+
+              // Convert to RGB value
+              var r = parseInt(hexcolor.substr(0, 2), 16);
+              var g = parseInt(hexcolor.substr(2, 2), 16);
+              var b = parseInt(hexcolor.substr(4, 2), 16);
+
+              // Get YIQ ratio
+              var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+
+              // Check contrast
+              return (yiq >= 128) ? 'black' : 'white';
+
+            };
+
+            var spotifyBlack = '#121212';
+            var spotifyGreen = '#1DB954';
+
+            // Overwrites specific rows "targets" with content
+            var currentColumnDefinitions = [
+              {
+                targets: 1,
+                data: null,
+                width: "100px"
+              },
+              {
+                "targets": 0,
+                "data": null,
+                "width": '145px',
+                "defaultContent": '<button class="btn" style="background-color:' + spotifyBlack + '; color:' + getContrast(spotifyBlack) + ';">Remove from Playlist</button>',
+                "orderable": false
+              }];
+            var oldColumnDefinitions = [
+              {
+                targets: [1],
+                data: null,
+                width: "100px"
+              },
+              {
+                "targets": 0,
+                "data": null,
+                "width": '145px',
+                "defaultContent": '<button class="btn" style="background-color:' + spotifyGreen + '; color: ' + getContrast(spotifyGreen) + '">Add to Playlist</button>',
+                "orderable": false
+              }];
+
+            // Sorts by the state of the last columns. This is needed because otherwise
+            // the sort automatically defaults to alphabetical
+            var order = [[Object.keys(data.currentSongs[0]).length, 'desc']];
+
+            // Used to build individual table cells
+            function rowCallback(row, data, index) {
+
+              var rowKeys = Object.keys(data);
+              rowKeys.sort(function (a, b) { return a - b }); // Order 
+              rowKeys.unshift('button'); // Account for the move button at the start
+
+              for (var i = 0; i < rowKeys.length; i++) {
+                if (i > 1) {
+                  $(row).find('td:eq(' + i + ')').css('background-color', data[rowKeys[i]]);
+                  // $(row).find('td:eq(' + i + ')').css('color', 'transparent');
+                  $(row).find('td:eq(' + i + ')').html(''); // Remove text (hexidecimal color) from td element
+                } else {
+                  $(row).find('td:eq(' + i + ')').css('background-color', '#121212');
+                }
+              }
+            }
+            // End Table settings -----------------------------------------------------------------------------------
+
+            $('#playlist-selection').hide();
+
+            $(document).ready(function () { // Make sure to wait until the page is loaded
+
+              var current_songs_table = $('#current-songs-table').DataTable({
+                dom: 'Bfrtip',
+                data: currentSongs,
+                fixedColumns: { leftColumns: 2 },
+                info: false,
+                scrollX: true,
+                sScrollXInner: "100%",
+                paging: false,
+                order: order, // Order has to be an array index
+                columns: columnSettings,
+                rowCallback: rowCallback,
+                columnDefs: currentColumnDefinitions,
+              });
+
+              var old_songs_table = $('#old-songs-table').DataTable({
+                dom: 'Bfrtip',
+                data: oldSongs,
+                fixedColumns: { leftColumns: 2 },
+                info: false,
+                scrollX: true,
+                sScrollXInner: "100%",
+                paging: false,
+                order: order, // Order has to be an array index
+                columns: columnSettings,
+                rowCallback: rowCallback,
+                columnDefs: oldColumnDefinitions,
+              });
+
+              // Current song table button click callback
+              $('#current-songs-table_wrapper tbody').on('click', 'button', function () {
+                var rowData = current_songs_table.row($(this).parents('tr')).data();
+                var newCurrentSongs = [...currentSongs];
+                var newOldSongs = [...oldSongs];
+
+                var index = 0;
+                for (var song of newCurrentSongs) {
+                  if (song.name == rowData.name) {
+                    var removedSong = newCurrentSongs.splice(index, 1); // Remove and get song
+                    newOldSongs.unshift(removedSong[0]); // Splice returns a 1 long array
+                    break;
+                  }
+                  index++;
+                }
+                current_songs_table.clear();
+                current_songs_table.rows.add(newCurrentSongs);
+                current_songs_table.draw();
+
+                old_songs_table.clear();
+                old_songs_table.rows.add(newOldSongs);
+                old_songs_table.draw();
+
+                currentSongs = [...newCurrentSongs];
+                oldSongs = [...newOldSongs];
+              });
+
+              // Old song table button callback
+              $('#old-songs-table_wrapper tbody').on('click', 'button', function () {
+                var rowData = old_songs_table.row($(this).parents('tr')).data();
+                var newCurrentSongs = [...currentSongs];
+                var newOldSongs = [...oldSongs];
+
+                // Find selected song in array of table data
+                var foundSong;
+                var index = 0;
+                for (var song of newOldSongs) {
+                  if (song.name == rowData.name) {
+                    var removedSong = newOldSongs.splice(index, 1); // Remove and get song
+                    newCurrentSongs.push(removedSong[0]); // Splice returns a 1 long array
+                    foundSong = song;
+                    break;
+                  }
+                  index++;
+                }
+
+                var playlist_song_data = [...data.playlistReqBody.tracks.items];
+                for (var song of playlist_song_data) {
+                  console.log(song.track.name);
+                  console.log(foundSong.name);
+                  if (song.track.name == foundSong.name) {
+                    console.log('found it! ' + song.track.name);
+                  }
+                }
+
+                console.log('foundsong:');
+                console.log(foundSong);
+                // $.ajax({
+                //   url: '/chart',
+                //   data: {
+                //     'playlistID': playlistID,
+                //     'songUri': song.
+                //   } // Dictionary-type data
+                // }).done(function (data) {
+
+                // });
+
+                  // Update tables
+                  current_songs_table.clear();
+                current_songs_table.rows.add(newCurrentSongs);
+                current_songs_table.draw();
+                old_songs_table.clear();
+                old_songs_table.rows.add(newOldSongs);
+                old_songs_table.draw();
+
+                // Arrays used locally for UI experience - never sent to database/spotify api
+                currentSongs = [...newCurrentSongs];
+                oldSongs = [...newOldSongs];
+              });
+
+              // Fixing issue with transparent horizontal scroll header
+              $('.sorting, .sorting_disabled').css('background-color', spotifyBlack);
+
+
+              // Initializes table position to be scrolled all the way right
+              var maxScrollLeft = $('#old-songs-table').parent().css('width');
+              maxScrollLeft = parseInt(maxScrollLeft.slice(0, maxScrollLeft.length - 2));
+              $('#old-songs-table').parent().scrollLeft(maxScrollLeft);
+              $('#current-songs-table').parent().scrollLeft(maxScrollLeft);
+
+              // Syncronizes scroll between two tables
+              $('#current-songs-table').parent().on('scroll', function (e) {
+                $('#old-songs-table').parent().scrollLeft($('#current-songs-table').parent().scrollLeft());
+              });
+              $('#old-songs-table').parent().on('scroll', function (e) {
+                $('#current-songs-table').parent().scrollLeft($('#old-songs-table').parent().scrollLeft());
+              });
+
+              // Search all tables at once
+              $('label').css('display', 'none'); // Hide the datatable search bars while preserving the search functionality for our custom search
+              $("#Search_All").keyup(function () {
+                current_songs_table.search(this.value).draw();
+                old_songs_table.search(this.value).draw();
+              });
+
+              // Pops up the "do you want to save now?" dialogue
+              window.addEventListener('beforeunload', function (e) {
+                var myPageIsDirty = true; //you implement this logic...
+                if (myPageIsDirty) {
+                  // following two lines will cause the browser to ask the user if they
+                  // want to leave. The text of this dialog is controlled by the browser.
+                  e.preventDefault(); //per the standard
+                  e.returnValue = ''; //required for Chrome
+                }
+              });
+
+            });
+          });
+        });
+      } // End of authentication success if else
+    })();
+  </script>
+</body>
+
+</html>
