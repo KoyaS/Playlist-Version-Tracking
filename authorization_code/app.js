@@ -7,6 +7,9 @@
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
 
+var dotenv = require('dotenv').config({path: 'keys.env', debug: process.env.DEBUG });
+// var dotenv = require('dotenv');
+// var envConfig = dotenv.config({'path': '/keys.env'});
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
@@ -25,9 +28,9 @@ admin.initializeApp({
 const db = admin.firestore();
 
 // These are secret, move them to .env file before putting this project public
-var client_id = '***REMOVED***'; // Your client id
-var client_secret = '***REMOVED***'; // Your secret
-var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
+var client_id = process.env.client_id;
+var client_secret = process.env.client_secret;
+var redirect_uri = process.env.redirect_uri;
 
 /**
  * Generates a random string containing numbers and letters
@@ -115,11 +118,11 @@ app.get('/callback', async (req, res) => {
           json: true
         };
 
-        console.log('Access Token: ' + access_token + '\n');
+        // console.log('Access Token: ' + access_token + '\n');
 
         // use the access token to access the Spotify Web API
         request.get(options, async (error, response, body) => {
-          console.log(body);
+          // console.log(body);
           userprofiledata = body;
 
           const userRoot = await db.collection('users').doc(userprofiledata.id).get();

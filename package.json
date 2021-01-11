@@ -11,6 +11,7 @@
     "datatables.net-buttons-bs4": "^1.6.5",
     "datatables.net-fixedcolumns": "^3.3.2",
     "datatables.net-rowreorder": "^1.2.7",
+    "dotenv": "^8.2.0",
     "express": "~4.16.0",
     "firebase-admin": "^9.4.2",
     "querystring": "~0.2.0",
