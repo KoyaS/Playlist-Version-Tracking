@@ -7,7 +7,7 @@
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
 
-var dotenv = require('dotenv').config({path: 'keys.env', debug: process.env.DEBUG });
+var dotenv = require('dotenv').config({path: 'authorization_code/keys.env', debug: process.env.DEBUG });
 // var dotenv = require('dotenv');
 // var envConfig = dotenv.config({'path': '/keys.env'});
 var express = require('express'); // Express web server framework
