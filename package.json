@@ -1,7 +1,7 @@
 {
-  "author": "Spotify",
-  "name": "web-api-auth-examples",
-  "description": "Basic examples of the Spotify authorization flows through OAuth 2",
+  "author": "Koya Saito",
+  "name": "spotify-playlist-version-tracking",
+  "description": "A playlist version tracking software, built using the spotify authenticaation and playlist APIs.",
   "version": "0.0.2",
   "dependencies": {
     "cookie-parser": "^1.4.5",
