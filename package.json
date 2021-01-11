@@ -17,5 +17,8 @@
     "querystring": "~0.2.0",
     "request": "^2.88.2",
     "tabulator-tables": "^4.9.3"
+  },
+  "scripts": {
+    "start": "node authorization_code/app.js"
   }
 }
