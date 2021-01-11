@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "spotifysnapshotvis-300423",
+  "private_key_id": "5ae2e93ae74797c2e9186b6a8331562fdd4ca276",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC8sdrvYNH0mxum\nY666K6Y43oNEnAQCPvw6vhnH5kFKYksKBxw192hwgsBn5jyfHoNHVmdvIRBVky0z\nXSc3wLT/MSocFk4sIpfUre/SaOYD8EcTzvQRGAEe1zEkW6OWRNMYnjFQBNyKynDS\n4ltgCOPI8f81gOdpRdYeN9vMsXTNDR57C9mr0u7LhOW9a5AkeImVCMpQIQzSPlw7\nJFsKQo0mqv+nBnruqB+rkeCfDUakExk/Ar4HvoP/c87w3clUZG0tbfuXy9a+4QbZ\nosffvzclQIht3pwqCO+WlHbPAK4/4fRB68TEzhS1Kxs3pZcgPkPco98pnQoLcoPP\ncBp7AV+TAgMBAAECggEAFKdtHPWelaUitihEGFmtxJzKhoiDQdGuHynuvXw9Gky/\nBPZ5RojxtBsDv3uqmAopeXYCNV5LoOpOsMgaAlbEGQjDILbqUJdqwhtV3FSiFL1I\nsmjdOz/C46LPXLjxI4IeDxxFrooRr9lv1w1yzgS7FiQy+KLG8bV0tfMMSpAEBmug\nIsVdbMnQUzD2qWzCTY4ZCVqC0QQMmPaqr/vnRNOfjjFGx8eOMdyIsHEA8ZLo2Qf+\n0nk9kuMVV4LLYjhDG4LDLyP5EJRUTZIEVULFX58ALxWLwj7yQXL3wwCXBBOp10mI\nt+mCgm1l1psPSGXttIQnTUnY09FRp9scU35VhbOmXQKBgQD7wXeDYE1hJw0hBNOR\n7HWyz1CsNHqiThfkGGRXTH2TDqrV0D4pqkNZWduh9/eZrsqmmPbA3ONaUfqnEIAw\n5/AU56OW7GiyqZU5fIO00osqIgtr30sZPp3paUaJgicyRioJCtDhSu1AMpC6aSTg\n1WzKLWnNvHxnXPoQpzcu56FY/wKBgQC/4Dpz370dHxh4yIffTX+Gleo3SL7JQ7VI\nar7BrTbt7lwqTQlybFrVhc7Ru8U9eW/sPClbiXBKSsa5mne038yXcSBx472ch7Jn\nzofYq/FyvCoblT4KjSk1v6lkT2B9ovxiSVnKH27fUruSKcO15tQfZhA4ljc56pfr\nT6site6FbQKBgQCAPA2KR7VidSfE19aEj7Nr/xmSfbCxl6Gnt5z0squMCn6OJmJj\niqx/iLvNBqeCCnyC24tktZ7A1N0d19PUFXA+1baIG6dAygyOmZPkuRHVxj2XFsgD\n9dctm0goprkcbIzgyjeXajjq6Fa7/O6h71RYr0UjXIzpgXyGmwYKyEVxNQKBgHK/\nTRWo8zbsNr1c52zSsvYwx24icf55IHvbYpL+3L+z8ahWg9TLGhNhv0rMaWuXKSj0\n3aLhcabsSyYKS5Z+1KKow8d4dBedS0MrTzBzu6RrBR+TxBOZUdDT+yCDG+hmxVqe\nFTV8UNj7aDNECMfK8IaKih7dLs/TDOFrtqO+e5ONAoGAPEs8qR1rohOEIjcXXcJC\nqW8LPYn7fevQAYckP5N5sLXioKOSRdAXW0TpUiJDe/bix2pdkSQPMIetZ/bS9l7d\neeXkGnxFO0SUIRBvpLfrClLVpRY3l/cA5tWHD6wf57tJe4NGKnkkwJVdNukDFs5r\nmNH4CUeE50ZXD65Ees4pkVM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "snaphotserviceacc@spotifysnapshotvis-300423.iam.gserviceaccount.com",
+  "client_id": "102452236634346686576",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/snaphotserviceacc%40spotifysnapshotvis-300423.iam.gserviceaccount.com"
+}
