@@ -58,7 +58,7 @@ app.get('/login', function (req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email playlist-modify-private playlist-modify-public';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -176,25 +176,60 @@ app.get('/refresh_token', function (req, res) {
 });
 
 app.get('/addsong', async (req, res) => {
-
   var authOptions = {
-    url: 'https://accounts.spotify.com/api/token',
+    url: 'https://api.spotify.com/v1/playlists/' + req.query.playlistID + '/tracks',
     headers: {
-      'Authorization': 'Bearer ' + access_token
+      'Authorization': 'Bearer ' + access_token,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
     },
-    json: true,
-    form: {
-      "playlist_id": req.query.playlistID,
-      "uris": [req.query.songUri],
-    }
+    body: {
+      uris: [req.query.songUri],
+    },
+    json: true
   };
 
-  req.post(authOptions, function(error, response, body){
-    console.log(response);
+  request.post(authOptions, function (error, response, body) {
+    res.send(body);
   });
-
-  res.send({});
 });
+
+app.get('/deletesong', async (req, res) => {
+  var authOptions = {
+    url: 'https://api.spotify.com/v1/playlists/' + req.query.playlistID + '/tracks',
+    headers: {
+      'Authorization': 'Bearer ' + access_token,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: {
+      tracks: [{ uri: req.query.songUri }],
+    },
+    json: true
+  };
+
+  request.delete(authOptions, function (error, response, body) {
+    res.send(body);
+  });
+});
+
+// Taking this out of the current build because there's a limit on the header size which means theoretically if you added/removed
+// too many songs at once then there would be a problem. Was meant to act as a user-exits-page cleanup function
+// // Currently doesn't update all songs all time. A future upgrade might allow you to search songs on spotify in 
+// // which case this would be necessary because new music would be introduced.
+// app.get('/saveversion', async (req, res) => { 
+
+//   console.log('here');
+//   console.log(req.query.playlistID);
+
+//   const versionSnapshot = await db.collection('users').doc(userprofiledata.id).collection('playlists').doc(req.query.playlistID).get('versions');
+
+//   console.log(versionSnapshot);
+//   console.log('---------------');
+//   console.log(req.query.currentSongs);
+//   console.log('---------------');
+//   console.log(req.query.currentSongObjects);
+// });
 
 app.get('/chart', async (req, res) => {
 
@@ -210,38 +245,47 @@ app.get('/chart', async (req, res) => {
   }, async (error, response, body) => {
     var tracks = body['tracks']['items'];
     var trackNames = [];
+    var trackObjects = [];
 
+    // Process the playlist request into data we can use
     for (let step = 0; step < tracks.length; step++) {
       trackNames.push(tracks[step]['track']['name']);
+      trackObjects.push(tracks[step]);
     }
 
     // Add these to persitent records and construct chart data
-
-    const playlistSnapshot = await db.collection('users').doc(userprofiledata.id).collection('playlists').doc(playlistID).get();
-
     // Variables are declared on this level to be accessed later by UI table data constructing code
     var newVersions;
-    var newAllSongsAllTime;
+    var newAllTrackNamesAllTime;
+    var newAllTrackObjectsAllTime;
+    const playlistSnapshot = await db.collection('users').doc(userprofiledata.id).collection('playlists').doc(playlistID).get();
     if (playlistSnapshot.exists) {
       const versions = playlistSnapshot.get('versions');
-      const allSongsAllTime = playlistSnapshot.get('allSongsAllTime');
+      const allSongsAllTime = playlistSnapshot.get('allSongsAllTime'); // Returns object: {'trackNames':[], 'trackObjects':[{},{}]}
 
       // Add any new songs to allSongsAllTime array
-      newAllSongsAllTime = [...allSongsAllTime];
-      for (var song of trackNames) {
-        if (!(newAllSongsAllTime.includes(song))) {
-          newAllSongsAllTime.push(song);
+      newAllTrackNamesAllTime = [...allSongsAllTime['trackNames']];
+      newAllTrackObjectsAllTime = [...allSongsAllTime['trackObjects']];
+
+      for (let i = 0; i < trackNames.length; i++) {
+        var trackName = trackNames[i];
+        if (!(newAllTrackNamesAllTime.includes(trackName))) {
+          newAllTrackNamesAllTime.push(trackName);
+          newAllTrackObjectsAllTime.push(trackObjects[i]);
         }
       }
       await playlistSnapshot.ref.update({
-        'allSongsAllTime': newAllSongsAllTime
+        'allSongsAllTime': {
+          'trackNames': newAllTrackNamesAllTime,
+          'trackObjects': newAllTrackObjectsAllTime
+        }
       });
 
       // Check if the current version of the playlist has any different songs (don't care about reorder) than the previous, most recent version
-      newVersions = versions;
-      var mostRecentVersion = versions[versions.length - 1]['tracks']; // array of songs last saved when user logged in having made changes
-      if (trackNames.length == mostRecentVersion.length) {
-        const filteredArray = trackNames.filter(value => mostRecentVersion.includes(value));
+      newVersions = [...versions];
+      var mostRecentVersionTrackNames = versions[versions.length - 1]['tracks']['trackNames']; // array of songs last saved when user logged in having made changes
+      if (trackNames.length == mostRecentVersionTrackNames.length) { // If this playlist version is the same as previous version
+        const filteredArray = trackNames.filter(value => mostRecentVersionTrackNames.includes(value));
         if (filteredArray.length == trackNames.length) {
           // This current playlist version is the same as the previous version
           console.log('this version is the same as the previous version, doing nothing');
@@ -252,34 +296,44 @@ app.get('/chart', async (req, res) => {
 
         const newVersion = {
           'createdTimeMillis': Date.now().toFixed(),
-          'tracks': trackNames
+          'tracks': {
+            'trackNames': trackNames,
+            'trackObjects': trackObjects
+          }
         }
 
         // Adding new version to the old versions array to be pushed to database. 
         // UI table data constructing code uses this variable assuming that this is the current version
-        // of the database. This can cause problems if there is an uncaught error while updating the database
+        // of the database. This can cause problems if there is an uncaught error while updating the database.
+        // This would cause the database to not update but the UI would reflect the update
         newVersions.push(newVersion);
 
         await playlistSnapshot.ref.update({
           'versions': newVersions
         });
-        console.log(newVersions);
       }
 
     } else { // Playlist records don't exist, never been accessed before; create new record for playlist 
+      console.log('this playlist has never been accessed before, creating new records');
       // Note: Also see above comment (newVersions.push(newVersion);)
       // UI table data constructing code uses newVersions assuming that this is the current version
       // of the database. This can cause problems if there is an uncaught error while updating the database
       newVersions = [{
         'createdTimeMillis': Date.now().toFixed(),
-        'tracks': trackNames
+        'tracks': {
+          'trackNames': trackNames,
+          'trackObjects': trackObjects
+        }
       }];
-      newAllSongsAllTime = [...trackNames];
+      newAllTrackNamesAllTime = [...trackNames];
 
       await playlistSnapshot.ref.set({
         'name': body.name,
         'firstAccessed': Date.now().toFixed(),
-        'allSongsAllTime': trackNames,
+        'allSongsAllTime': {
+          'trackNames': trackNames,
+          'trackObjects': trackObjects
+        },
         'versions': newVersions
       }, { 'merge': true });
     }
@@ -288,15 +342,18 @@ app.get('/chart', async (req, res) => {
     var olderVersions = [...newVersions]; // Create a clone; currentVersions shouldn't be a pointer
     var current_version = olderVersions.pop(); // Remove the last version (current playlist state) from the list of versions
 
-    const trueColor = '#1ed760';
+    const trueColor = '#33D0BC'; // Spotify green: #1ed760
     const falseColor = '#121212';
 
     // Creating true/false entries for all versions for all songs that are currently in the playlist
     var currentSongs = [];
-    for (var trackName of current_version['tracks']) {
+    var currentSongObjects = [];
+    for (let i = 0; i < current_version['tracks']['trackNames'].length; i++) {
+      var trackName = current_version['tracks']['trackNames'][i];
       var rowData = { 'name': trackName };
+      currentSongObjects.push(current_version['tracks']['trackObjects'][i]);
       for (var olderVersion of olderVersions) {
-        if (olderVersion['tracks'].includes(trackName)) {
+        if (olderVersion['tracks']['trackNames'].includes(trackName)) {
           rowData[olderVersion['createdTimeMillis']] = trueColor; // true
         } else {
           rowData[olderVersion['createdTimeMillis']] = falseColor; // false
@@ -308,11 +365,14 @@ app.get('/chart', async (req, res) => {
 
     // Creating true/false entries for all versions for all songs which used to be in the playlist and aren't anymore
     var oldSongs = [];
-    for (var trackName of newAllSongsAllTime) {
+    var oldSongObjects = [];
+    for (let i = 0; i < newAllTrackNamesAllTime.length; i++) {
+      var trackName = newAllTrackNamesAllTime[i];
       var rowData = { 'name': trackName };
-      if (!current_version['tracks'].includes(trackName)) { // For all the songs that aren't included in the above loop of current_version
+      if (!current_version['tracks']['trackNames'].includes(trackName)) { // For all the songs that aren't included in the above loop of current_version
+        oldSongObjects.push(newAllTrackObjectsAllTime[i]);
         for (var olderVersion of olderVersions) {
-          if (olderVersion['tracks'].includes(trackName)) {
+          if (olderVersion['tracks']['trackNames'].includes(trackName)) {
             rowData[olderVersion['createdTimeMillis']] = trueColor; // true
           } else {
             rowData[olderVersion['createdTimeMillis']] = falseColor; // false
@@ -325,7 +385,9 @@ app.get('/chart', async (req, res) => {
 
     res.send({ // Sends data to frontend of application
       currentSongs: currentSongs,
+      currentSongObjects,
       oldSongs: oldSongs,
+      oldSongObjects,
       playlistReqBody: body
     });
     // res.redirect('/chart');

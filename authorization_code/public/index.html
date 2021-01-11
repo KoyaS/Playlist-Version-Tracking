@@ -11,6 +11,10 @@
       display: none;
     }
 
+    #chart-page-elements {
+      display: none
+    }
+
     .text-overflow {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -20,6 +24,18 @@
 
     #Search_All {
       display: none;
+    }
+
+    #back-button {
+      color: white;
+      background-color: transparent;
+      text-decoration: none;
+    }
+
+    #back-button:hover {
+      color: white;
+      background-color: transparent;
+      text-decoration: underline;
     }
 
     /* Things for table styling */
@@ -35,20 +51,106 @@
       background-color: #121212;
     }
 
+    #Search_All {
+      color: white;
+    }
+
     #Search_All:focus {
       border-color: rgba(126, 239, 104, 0.8);
       box-shadow: 0 0 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px white;
       outline: 0 none;
       color: white;
     }
+
+    #login-button:hover {
+      background-color: #2CDD6A;
+    }
+
+    #login-button {
+      font-size: 14px;
+      line-height: 1;
+      border-radius: 500px;
+      padding: 18px 48px 16px;
+      border-width: 0;
+      letter-spacing: 2px;
+      min-width: 160px;
+      text-transform: uppercase;
+      white-space: normal;
+      border-color: #1aa34a;
+      background-color: #1aa34a;
+      color: white;
+      font-weight: bold;
+      transition-property: background-color, border-color, color, box-shadow, filter;
+      transition-duration: .3s;
+    }
   </style>
 </head>
 
-<body style="padding-top:100px; background-color: #121212; color: whitesmoke;">
+<body style="padding-top:100px; padding-bottom:100px; background-color: #121212; color: whitesmoke;">
   <div class="container">
     <div id="login">
-      <h1>This is an example of the Authorization Code flow</h1>
-      <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+
+      <div class="row">
+        <div class="col-md-6">
+          <img src="/images/Logo Rectangle.png" class="img-fluid center-block" style="width:70%">
+          <h1 class="text-center"> Never Really Gone </h1>
+          <p class="lead">
+            Is a song you like getting repetitive? Take it off your playlist for a while! <span
+              style="color:#8BE5D9">Keep your playlist packed with only the songs you really enjoy</span>. En Rotation
+            remembers what song(s) you remove from your playlist so you can take a break from listening to them without
+            forgetting their names. Your removed songs are collected in a list beneath your current playlist - put them
+            back in rotation with the click of a button.
+          </p>
+          <br>
+          <p class="lead">
+            Use this service to help your playlist evolve over time. Since En Rotation remembers your music you don't
+            have to think about getting rid of songs you don't like - do it and the change becomes reversible! We'll
+            help you remember different versions of your playlist as it changes too. As an added benefit, <span
+              style="color:#8BE5D9"> En Rotation shows you when you removed / added songs so you can see how your taste
+              has been changing</span>!
+          </p>
+        </div>
+        <div class="col-md-6">
+          <img src="images/Application Preview Buttons.PNG" class="img-fluid center-block rounded thumbnail"
+            style="width:60%; box-shadow: 0 0 1px rgba(0, 0, 0, 0.075) inset, 0 0 20px white; outline: 0 none; color: white;">
+        </div>
+      </div>
+      <br>
+      <br>
+      <hr>
+      <br>
+      <div class="row">
+        <h1 class="text-center"> How it Works </h1>
+      </div>
+      <br>
+      <div class="row text-center">
+        <p class="lead">
+          En Rotation automatically collects the songs from your playlist - in order to pass in information, all you
+          have to do is log in. <span style="color:#8BE5D9"> Each time you open a playlist through our application we
+            create a snapshot of it. </span> If you've made changes to the playlist we update our records and keep the
+          snapshot, otherwise we throw it away. You're then presented with your current playlist in comparison to the
+          snapshots we have on record. You can then make changes to your playlist and see the songs which used to be on
+          it.
+        </p>
+      </div>
+      <div class="row">
+        <h1 class="text-center"> Ready to Use? </h1>
+      </div>
+      <div class="row text-center">
+        <img src="images/spotify-icons-logos/logos/01_RGB/02_PNG/Spotify_Logo_RGB_Green.png" class="img-fluid"
+          style="width:30%; margin: 7%; min-width: 70px;">
+        <p class="lead">
+          This webapp is powered by Spotify (not affiliated). To get started, log in and select one of your playlists to
+          view - we'll take our first snapshot of the playlist and you'll be able to see the first version in the
+          playlist table.
+        </p>
+      </div>
+      <br>
+      <div class="row text-center">
+        <!-- <h1>This is an example of the Authorization Code flow</h1> -->
+        <a href="/login"><button id="login-button">Log in with Spotify</button></a>
+      </div>
+
     </div>
     <div id="loggedin">
       <div id="default">
@@ -58,14 +160,21 @@
         </div>
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
-      <div id="selected-playlist-display">
+      <div id="chart-page-elements">
+        <h4 class="back-button">
+          <a id="back-button" href="javascript:console.log();">&larr; Back</a>
+        </h4>
+        <div id="selected-playlist-display">
+        </div>
+        <input type="text" id="Search_All" class="form-control bg-dark mb-5 shadow-lg" placeholder="Song title..."
+          style="border: 0; outline: 0; background: transparent; border-bottom: 1px solid white; border-radius: 0;">
+        <h2 id="active-songs-header" class="display-4">Active Songs</h2>
+        <table id='current-songs-table' style="table-layout: fixed; height: 50%; word-wrap:break-word;" class="">
+        </table>
+        <h2 id="idle-songs-header" class="display-4">Idle Songs</h2>
+        <table id='old-songs-table' style="table-layout: fixed; height: 50%; word-wrap:break-word;" class="">
+        </table>
       </div>
-      <input type="text" id="Search_All" class="form-control bg-dark mb-5 shadow-lg" placeholder="Song title..."
-        style="border: 0; outline: 0; background: transparent; border-bottom: 1px solid white; border-radius: 0;">
-      <table id='current-songs-table' style="table-layout: fixed; height: 50%; word-wrap:break-word;" class="">
-      </table>
-      <table id='old-songs-table' style="table-layout: fixed; height: 50%; word-wrap:break-word;" class="">
-      </table>
       <div id="playlist-selection">
       </div>
     </div>
@@ -242,7 +351,6 @@
                 type: "GET",
                 beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + access_token); },
                 success: function (data) {
-                  console.log(data);
                   playlistSelectionPlaceholder.innerHTML = playlistSelectionTemplate(data);
                 }
               });
@@ -270,7 +378,8 @@
         }, false);
 
         var table;
-
+        var current_songs_table;
+        var old_songs_table;
         $(document).on('click', '.playlist-thumbnail', function () {
           var playlistID = $(this).attr('id');
 
@@ -281,11 +390,8 @@
             } // Dictionary-type data
           }).done(function (data) {
 
-            console.log('data from the backend request');
-            console.log(data);
-
-            console.log(data.playlistReqBody);
             selectedPlaylistDisplayPlaceholder.innerHTML = selectedPlaylistDisplayTemplate(data.playlistReqBody);
+            $('#chart-page-elements').show();
             $('#Search_All').show();
 
             // Creating column header settings dictionary ------------------------------------------------------------
@@ -307,7 +413,44 @@
             // Convert ordered millisTimes to date strings
             for (var millisTime of millisTimes) {
               var dateTime = new Date(parseInt(millisTime));
-              var titleString = dateTime.toLocaleString();
+
+              // Some code from here: 
+              // https://stackoverflow.com/questions/29206453/best-way-to-convert-military-time-to-standard-time-in-javascript
+              // https://stackoverflow.com/questions/8362952/javascript-output-current-datetime-in-yyyy-mm-dd-hhmsec-format
+              var dateString =
+                dateTime.getUTCFullYear() + "/" +
+                ("0" + (dateTime.getUTCMonth() + 1)).slice(-2) + "/" +
+                ("0" + dateTime.getUTCDate()).slice(-2);
+              var timeString =
+                ("0" + dateTime.getUTCHours()).slice(-2) + ":" +
+                ("0" + dateTime.getUTCMinutes()).slice(-2) + ':00';
+
+              var time = timeString; // your input
+              time = time.split(':'); // convert to array
+
+              // fetch
+              var hours = Number(time[0]);
+              var minutes = Number(time[1]);
+              var seconds = Number(time[2]);
+
+              // calculate
+              var timeValue;
+
+              if (hours > 0 && hours <= 12) {
+                timeValue = "" + hours;
+              } else if (hours > 12) {
+                timeValue = "" + (hours - 12);
+              } else if (hours == 0) {
+                timeValue = "12";
+              }
+
+              timeValue += (minutes < 10) ? ":0" + minutes : ":" + minutes;  // get minutes
+              // timeValue += (seconds < 10) ? ":0" + seconds : ":" + seconds;  // get seconds
+              timeValue += (hours >= 12) ? "pm" : "am";  // get AM/PM
+
+              var titleString = dateString + ' ' + timeValue;
+              // var titleString = dateTime.toLocaleString();
+
               columnSettings.push({ data: millisTime, title: titleString, width: "100px" });
             }
 
@@ -316,6 +459,8 @@
 
             // End table header settings dictionary -----------------------------------------------------------------
             // Table settings ---------------------------------------------------------------------------------------
+            var currentSongObjects = data.currentSongObjects;
+            var oldSongObjects = data.oldSongObjects;
             var currentSongs = data.currentSongs;
             var oldSongs = data.oldSongs;
 
@@ -354,7 +499,7 @@
             };
 
             var spotifyBlack = '#121212';
-            var spotifyGreen = '#1DB954';
+            var spotifyGreen = '#33D0BC'; // Real green: #1DB954
 
             // Overwrites specific rows "targets" with content
             var currentColumnDefinitions = [
@@ -367,7 +512,7 @@
                 "targets": 0,
                 "data": null,
                 "width": '145px',
-                "defaultContent": '<button class="btn" style="background-color:' + spotifyBlack + '; color:' + getContrast(spotifyBlack) + ';">Remove from Playlist</button>',
+                "defaultContent": '<button class="btn" style="background-color:' + '#535353' + '; color:' + getContrast(spotifyBlack) + ';">Remove from Playlist</button>',
                 "orderable": false
               }];
             var oldColumnDefinitions = [
@@ -411,9 +556,10 @@
 
             $(document).ready(function () { // Make sure to wait until the page is loaded
 
-              var current_songs_table = $('#current-songs-table').DataTable({
+              current_songs_table = $('#current-songs-table').DataTable({
                 dom: 'Bfrtip',
                 data: currentSongs,
+                // destroy: true,
                 fixedColumns: { leftColumns: 2 },
                 info: false,
                 scrollX: true,
@@ -425,9 +571,10 @@
                 columnDefs: currentColumnDefinitions,
               });
 
-              var old_songs_table = $('#old-songs-table').DataTable({
+              old_songs_table = $('#old-songs-table').DataTable({
                 dom: 'Bfrtip',
                 data: oldSongs,
+                // destroy: true,
                 fixedColumns: { leftColumns: 2 },
                 info: false,
                 scrollX: true,
@@ -443,71 +590,39 @@
               $('#current-songs-table_wrapper tbody').on('click', 'button', function () {
                 var rowData = current_songs_table.row($(this).parents('tr')).data();
                 var newCurrentSongs = [...currentSongs];
+                var newCurrentSongObjects = [...currentSongObjects];
                 var newOldSongs = [...oldSongs];
+                var newOldSongObjects = [...oldSongObjects];
 
+                var foundSong;
                 var index = 0;
                 for (var song of newCurrentSongs) {
                   if (song.name == rowData.name) {
+                    // Song Names
                     var removedSong = newCurrentSongs.splice(index, 1); // Remove and get song
                     newOldSongs.unshift(removedSong[0]); // Splice returns a 1 long array
+                    // Song Objects
+                    var removedObject = newCurrentSongObjects.splice(index, 1);
+                    newOldSongObjects.unshift(removedObject[0]);
+
+                    foundSong = removedObject[0];
                     break;
                   }
                   index++;
                 }
+
+                // Remove song from the playlist
+                $.ajax({
+                  url: '/deletesong',
+                  data: {
+                    'playlistID': playlistID,
+                    'songUri': foundSong.track.uri
+                  }
+                }).done(function (data) {
+                  // Add error catching here
+                });
+
                 current_songs_table.clear();
-                current_songs_table.rows.add(newCurrentSongs);
-                current_songs_table.draw();
-
-                old_songs_table.clear();
-                old_songs_table.rows.add(newOldSongs);
-                old_songs_table.draw();
-
-                currentSongs = [...newCurrentSongs];
-                oldSongs = [...newOldSongs];
-              });
-
-              // Old song table button callback
-              $('#old-songs-table_wrapper tbody').on('click', 'button', function () {
-                var rowData = old_songs_table.row($(this).parents('tr')).data();
-                var newCurrentSongs = [...currentSongs];
-                var newOldSongs = [...oldSongs];
-
-                // Find selected song in array of table data
-                var foundSong;
-                var index = 0;
-                for (var song of newOldSongs) {
-                  if (song.name == rowData.name) {
-                    var removedSong = newOldSongs.splice(index, 1); // Remove and get song
-                    newCurrentSongs.push(removedSong[0]); // Splice returns a 1 long array
-                    foundSong = song;
-                    break;
-                  }
-                  index++;
-                }
-
-                var playlist_song_data = [...data.playlistReqBody.tracks.items];
-                for (var song of playlist_song_data) {
-                  console.log(song.track.name);
-                  console.log(foundSong.name);
-                  if (song.track.name == foundSong.name) {
-                    console.log('found it! ' + song.track.name);
-                  }
-                }
-
-                console.log('foundsong:');
-                console.log(foundSong);
-                // $.ajax({
-                //   url: '/chart',
-                //   data: {
-                //     'playlistID': playlistID,
-                //     'songUri': song.
-                //   } // Dictionary-type data
-                // }).done(function (data) {
-
-                // });
-
-                  // Update tables
-                  current_songs_table.clear();
                 current_songs_table.rows.add(newCurrentSongs);
                 current_songs_table.draw();
                 old_songs_table.clear();
@@ -517,6 +632,61 @@
                 // Arrays used locally for UI experience - never sent to database/spotify api
                 currentSongs = [...newCurrentSongs];
                 oldSongs = [...newOldSongs];
+                currentSongObjects = [...newCurrentSongObjects];
+                oldSongObjects = [...newOldSongObjects];
+              });
+
+              // Old song table button callback
+              $('#old-songs-table_wrapper tbody').on('click', 'button', function () {
+                var rowData = old_songs_table.row($(this).parents('tr')).data();
+                var newCurrentSongs = [...currentSongs];
+                var newCurrentSongObjects = [...currentSongObjects];
+                var newOldSongs = [...oldSongs];
+                var newOldSongObjects = [...oldSongObjects];
+
+                // Find selected song in array of table data
+                var foundSong;
+                var index = 0;
+                for (var song of newOldSongs) {
+                  if (song.name == rowData.name) {
+                    // Song Names
+                    var removedSong = newOldSongs.splice(index, 1); // Remove and get song
+                    newCurrentSongs.push(removedSong[0]); // Splice returns a 1 long array
+                    // Song Objects
+                    var removedObject = newOldSongObjects.splice(index, 1);
+                    newCurrentSongObjects.push(removedObject[0]);
+
+                    // Save the object to be accessed in API call
+                    foundSong = removedObject[0];
+                    break;
+                  }
+                  index++;
+                }
+
+                // Add old song back to the playlist
+                $.ajax({
+                  url: '/addsong',
+                  data: {
+                    'playlistID': playlistID,
+                    'songUri': foundSong.track.uri
+                  }
+                }).done(function (data) {
+                  // Add error catching here
+                });
+
+                // Update tables
+                current_songs_table.clear();
+                current_songs_table.rows.add(newCurrentSongs);
+                current_songs_table.draw();
+                old_songs_table.clear();
+                old_songs_table.rows.add(newOldSongs);
+                old_songs_table.draw();
+
+                // Arrays used locally for UI experience - never sent to database/spotify api
+                currentSongs = [...newCurrentSongs];
+                currentSongObjects = [...newCurrentSongObjects];
+                oldSongs = [...newOldSongs];
+                oldSongObjects = [...newOldSongObjects];
               });
 
               // Fixing issue with transparent horizontal scroll header
@@ -545,22 +715,53 @@
               });
 
               // Pops up the "do you want to save now?" dialogue
-              window.addEventListener('beforeunload', function (e) {
-                var myPageIsDirty = true; //you implement this logic...
-                if (myPageIsDirty) {
-                  // following two lines will cause the browser to ask the user if they
-                  // want to leave. The text of this dialog is controlled by the browser.
-                  e.preventDefault(); //per the standard
-                  e.returnValue = ''; //required for Chrome
-                }
-              });
+              // window.addEventListener('beforeunload', function (e) {
+              //   console.log('hre');
 
+              //   $.ajax({
+              //     url: '/saveversion',
+              //     data: {
+              //       playlistID: playlistID,
+              //       currentSongs: currentSongs,
+              //       currentSongObjects: currentSongObjects,
+              //       oldSongs: oldSongs,
+              //       oldSongObjects: oldSongObjects
+              //     }
+              //   }).done(function (data) {
+              //     console.log(data); // should't be able to see this: leaving the page
+              //   });
+
+              //   var myPageIsDirty = true; //you implement this logic...
+              //   if (myPageIsDirty) {
+              //     // following two lines will cause the browser to ask the user if they
+              //     // want to leave. The text of this dialog is controlled by the browser.
+              //     e.preventDefault(); //per the standard
+              //     e.returnValue = ''; //required for Chrome
+              //   }
+
+              // });
             });
           });
         });
+
+        $(document).on('click', '#back-button', function () {
+          $('#current-songs-table_wrapper').replaceWith('<table id="current-songs-table" style="table-layout: fixed; height: 50%; word-wrap:break-word;" class=""></table>');
+          $('#old-songs-table_wrapper').replaceWith('<table id="old-songs-table" style="table-layout: fixed; height: 50%; word-wrap:break-word;" class=""></table>');
+          current_songs_table.destroy(true);
+          old_songs_table.destroy(true);
+
+          $('#chart-page-elements').hide();
+          $('#playlist-selection').show();
+        });
+
       } // End of authentication success if else
     })();
   </script>
+  <div id="footer" style="margin-top: 80px;">
+    <div class="row text-center lead" style="color:gray">
+      Made by Koya Saito   |   <a href="https://github.com/KoyaS/Playlist-Version-Tracking"> Github </a>   |   <a href="https://www.linkedin.com/in/koya-saito-bb9384173"> LinkedIn </a>
+    </div>
+  </div>
 </body>
 
 </html>
