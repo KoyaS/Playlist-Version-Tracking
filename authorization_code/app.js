@@ -401,4 +401,4 @@ app.get('/chart', async (req, res) => {
 });
 
 console.log('Listening on 8888');
-app.listen();
+app.listen(process.env.PORT);
