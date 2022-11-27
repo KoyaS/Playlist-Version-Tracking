@@ -1,5 +1,7 @@
 # Spotify Playlist Version Tracking
 
+<img width="1532" alt="Screen Shot 2022-11-26 at 7 59 07 PM" src="https://user-images.githubusercontent.com/39803522/204118677-a3977202-12cf-4efd-86a0-be25212c4b35.png">
+
 A nodejs web/client webapp to help you keep track of the changes you make to playlists. Never forget what songs you delete from the playlist because this keeps track of that too! This project started as a fork of [this Spotify produced OAuth 2.0 demo](https://github.com/spotify/web-api-auth-examples).
 
 Some super helful resources used to make this possible:
